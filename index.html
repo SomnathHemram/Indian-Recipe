@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indian Recipe Finder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    .dark {
+      --tw-bg-opacity: 1;
+      background-color: rgb(17 24 39 / var(--tw-bg-opacity));
+      --tw-text-opacity: 1;
+      color: rgb(243 244 246 / var(--tw-text-opacity));
+    }
+    .recipe-card img {
+      transition: transform 0.3s ease;
+    }
+    .recipe-card:hover img {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Sample recipe database
+    const recipeData = [
+      {
+        id: 1,
+        name: "Butter Chicken",
+        image: "https://images.pexels.com/photos/29685054/pexels-photo-29685054.jpeg",
+        ingredients: [
+          "500g chicken",
+          "1 cup yogurt",
+          "2 tbsp butter",
+          "1 onion (chopped)",
+          "2 tomatoes (pureed)",
+          "1 tbsp ginger-garlic paste",
+          "1 tsp garam masala",
+          "1 tsp turmeric",
+          "1/2 cup cream",
+          "Fresh coriander (for garnish)"
+        ],
+        steps: [
+          "Marinate chicken in yogurt and spices for 2 hours",
+          "Heat butter in a pan, sauté onions until golden",
+          "Add ginger-garlic paste and tomato puree",
+          "Cook until oil separates, then add chicken",
+          "Simmer for 20 minutes, add cream at the end",
+          "Garnish with coriander and serve with naan"
+        ],
+        cookingTime: "40 minutes",
+        mealType: "dinner",
+        spiceLevel: "medium",
+        vegetarian: false,
+        region: "North India"
+      },
+      {
+        id: 2,
+        name: "Masala Dosa",
+        image: "https://images.pexels.com/photos/20422138/pexels-photo-20422138.jpeg",
+        ingredients: [
+          "2 cups rice",
+          "1 cup urad dal",
+          "1/2 tsp fenugreek seeds",
+          "Salt to taste",
+          "Potato masala (for filling)"
+        ],
+        steps: [
+          "Soak rice and dal separately for 6 hours",
+          "Grind to a smooth batter, ferment overnight",
+          "Heat tawa, spread batter into thin crepe",
+          "Add potato masala filling when dosa is cooked",
+          "Fold and serve with chutney and sambar"
+        ],
+        cookingTime: "30 minutes",
+        mealType: "breakfast",
+        spiceLevel: "mild",
+        vegetarian: true,
+        region: "South India"
+      },
+      {
+        id: 3,
+        name: "Chole Bhature",
+        image: "https://media.istockphoto.com/id/1328524499/photo/katlambe-chole.jpg?b=1&s=612x612&w=0&k=20&c=qGJwW1Ys9cDgcCQTJQdCMJcJaWWK5FiHs7th7eyq48Y=",
+        ingredients: [
+          "2 cups chickpeas (soaked overnight)",
+          "2 onions (chopped)",
+          "2 tomatoes (chopped)",
+          "1 tbsp chole masala",
+          "1 tsp ginger paste",
+          "1 tsp garlic paste",
+          "Bhature dough (maida, yogurt)"
+        ],
+        steps: [
+          "Pressure cook chickpeas until soft",
+          "Sauté onions, add spices and tomatoes",
+          "Add chickpeas, simmer for 15 minutes",
+          "Prepare bhature dough, roll and deep fry",
+          "Serve hot with pickle and onions"
+        ],
+        cookingTime: "50 minutes",
+        mealType: "lunch",
+        spiceLevel: "medium",
+        vegetarian: true,
+        region: "North India"
+      },
+      {
+        id: 4,
+        name: "Hyderabadi Biryani",
+        image: "https://images.pexels.com/photos/16020573/pexels-photo-16020573.jpeg",
+        ingredients: [
+          "500g basmati rice",
+          "750g chicken",
+          "2 onions (sliced)",
+          "1 cup yogurt",
+          "Biryani masala",
+          "Saffron strands",
+          "Mint and coriander leaves"
+        ],
+        steps: [
+          "Marinate chicken in yogurt and spices",
+          "Parboil rice with whole spices",
+          "Layer rice and chicken in handi",
+          "Add saffron milk and fried onions",
+          "Dum cook on low heat for 30 minutes",
+          "Serve with raita and salan"
+        ],
+        cookingTime: "60 minutes",
+        mealType: "dinner",
+        spiceLevel: "hot",
+        vegetarian: false,
+        region: "South India"
+      },
+      {
+        id: 5,
+        name: "Pani Puri",
+        image: "https://images.pexels.com/photos/13041630/pexels-photo-13041630.jpeg",
+        ingredients: [
+          "Puris (hollow fried dough balls)",
+          "Boiled potatoes",
+          "Cooked chickpeas",
+          "Tamarind chutney",
+          "Mint-coriander water",
+          "Chaat masala"
+        ],
+        steps: [
+          "Make a hole in each puri",
+          "Fill with potato and chickpeas",
+          "Add tamarind chutney",
+          "Dip in spiced mint water",
+          "Serve immediately"
+        ],
+        cookingTime: "20 minutes",
+        mealType: "snack",
+        spiceLevel: "medium",
+        vegetarian: true,
+        region: "West India"
+      },
+
+      {
+  id: 6,
+  name: "Rasgulla",
+  image: "https://media.istockphoto.com/id/1044080542/photo/indian-rasgulla-or-rosogulla-dessert-sweet-served-in-a-bowl-selective-focus.jpg?b=1&s=612x612&w=0&k=20&c=5Hzyep1tvvG4v5VVS-9bio5hfDs2Ydc5zSWau59Ci2Q=",
+  ingredients: [
+    "1 liter full cream milk",
+    "2 tbsp lemon juice",
+    "1 cup sugar",
+    "4 cups water",
+    "Cardamom pods"
+  ],
+  steps: [
+    "Boil milk and curdle it with lemon juice to make chenna",
+    "Drain and wash chenna, then knead into a smooth dough",
+    "Form small balls without cracks",
+    "Boil water and sugar with cardamom to make syrup",
+    "Add rasgullas and cook for 15 minutes covered",
+    "Let them soak and cool in syrup before serving"
+  ],
+  cookingTime: "45 minutes",
+  mealType: "dessert",
+  spiceLevel: "none",
+  vegetarian: true,
+  region: "East India"
+},
+
+
+      {
+        id: 7,
+        name: "Dhokla",
+        image: "https://media.istockphoto.com/id/1307786779/photo/khaman-dhokla.jpg?b=1&s=612x612&w=0&k=20&c=49MxI6GI8QRbF9LhEE5oGAlS85YTYNTH5Z9umPknhEY=",
+        ingredients: [
+          "2 cups besan (gram flour)",
+          "1 cup yogurt",
+          "1 tsp fruit salt",
+          "1 tbsp sugar",
+          "Oil for greasing",
+          "Mustard seeds for tempering"
+        ],
+        steps: [
+          "Mix besan with yogurt and water",
+          "Add sugar and salt, ferment for 30 mins",
+          "Add fruit salt, steam immediately",
+          "Temper with mustard seeds",
+          "Cut into squares and serve"
+        ],
+        cookingTime: "25 minutes",
+        mealType: "snack",
+        spiceLevel: "mild",
+        vegetarian: true,
+        region: "West India"
+      },
+      {
+        id: 8,
+        name: "Rogan Josh",
+        image: "https://media.istockphoto.com/id/1253934130/photo/mutton-masala-curry-in-plastic-container-for-home-delivery.jpg?b=1&s=612x612&w=0&k=20&c=XfIhh3nnTLD78qes8RTu3JzFPa2-7E_BWMTt60QbxzY=",
+        ingredients: [
+          "500g mutton",
+          "2 onions",
+          "1 tbsp ginger-garlic paste",
+          "1 tbsp Kashmiri chili",
+          "Yogurt",
+          "Whole spices (cardamom, cinnamon)",
+          "Saffron"
+        ],
+        steps: [
+          "Brown the mutton pieces",
+          "Sauté onions and spices",
+          "Add mutton and yogurt, cook on low heat",
+          "Add water and simmer for 2 hours",
+          "Finish with saffron infusion",
+          "Serve with rice"
+        ],
+        cookingTime: "120 minutes",
+        mealType: "dinner",
+        spiceLevel: "medium",
+        vegetarian: false,
+        region: "North India"
+      },
+      {
+        id: 9,
+        name: "Pav Bhaji",
+        image: "https://images.pexels.com/photos/5410400/pexels-photo-5410400.jpeg",
+        ingredients: [
+          "Mixed vegetables (potatoes, cauliflower, peas)",
+          "2 onions",
+          "2 tomatoes",
+          "Pav bhaji masala",
+          "Butter",
+          "Pav (bread rolls)"
+        ],
+        steps: [
+          "Pressure cook vegetables until soft",
+          "Mash and cook with masala",
+          "Sauté onions and tomatoes, add to vegetables",
+          "Toast pav with butter",
+          "Serve hot with onions and lemon"
+        ],
+        cookingTime: "40 minutes",
+        mealType: "lunch",
+        spiceLevel: "medium",
+        vegetarian: true,
+        region: "West India"
+      },
+
+      
+      {
+        id: 10,
+        name: "Idli Sambar",
+        image: "https://images.pexels.com/photos/31199041/pexels-photo-31199041.jpeg",
+        ingredients: [
+          "Idli batter",
+          "Toor dal",
+          "Sambar powder",
+          "Tamarind pulp",
+          "Vegetables (drumsticks, carrots)",
+          "Mustard seeds"
+        ],
+        steps: [
+          "Steam idli batter in molds",
+          "Cook dal with vegetables",
+          "Add sambar powder and tamarind",
+          "Temper with mustard seeds",
+          "Serve hot with chutney"
+        ],
+        cookingTime: "30 minutes",
+        mealType: "breakfast",
+        spiceLevel: "mild",
+        vegetarian: true,
+        region: "South India"
+      },
+      {
+        id: 11,
+        name: "Gulab Jamun",
+        image: "https://images.pexels.com/photos/7449105/pexels-photo-7449105.jpeg",
+        ingredients: [
+          "1 cup khoya",
+          "1/4 cup maida",
+          "1/4 tsp baking soda",
+          "Sugar syrup",
+          "Cardamom powder",
+          "Saffron strands"
+        ],
+        steps: [
+          "Knead khoya with maida and soda",
+          "Make small balls without cracks",
+          "Fry on low heat until golden",
+          "Soak in warm sugar syrup",
+          "Serve warm or cold"
+        ],
+        cookingTime: "35 minutes",
+        mealType: "dessert",
+        spiceLevel: "none",
+        vegetarian: true,
+        region: "North India"
+      },
+
+      {
+  id: 12,
+  name: "Macher Jhol",
+  image: "https://media.istockphoto.com/id/472189785/photo/macher-jhol.jpg?b=1&s=612x612&w=0&k=20&c=Y1E8KhjNyOtCQPJH6lNfmmqLCygJrywy4q1AlwQX-EQ=",
+  ingredients: [
+    "500g rohu or katla fish",
+    "2 potatoes (cubed)",
+    "1 tomato (chopped)",
+    "1 tsp turmeric",
+    "1 tsp red chili powder",
+    "1 bay leaf",
+    "Panch phoron",
+    "Mustard oil",
+    "Salt to taste"
+  ],
+  steps: [
+    "Marinate fish with salt and turmeric, shallow fry in mustard oil",
+    "In the same oil, temper with bay leaf and panch phoron",
+    "Add potatoes and sauté, then add tomato and spices",
+    "Add water and bring to boil, then add fried fish",
+    "Simmer until potatoes are tender and curry thickens",
+    "Serve hot with rice"
+  ],
+  cookingTime: "40 minutes",
+  mealType: "lunch",
+  spiceLevel: "medium",
+  vegetarian: false,
+  region: "East India"
+},
+{
+  id: 13,
+  name: "Chhena Poda",
+  image: "https://media.istockphoto.com/id/1315180922/photo/frass-sweet-baked-cottage-cheese-konark.jpg?b=1&s=612x612&w=0&k=20&c=AvEAFHX9q3exZEtJ9Zhu3RWsDhvyb4bSgj-9HI6lNIM=",
+  ingredients: [
+    "1 cup chhena (cottage cheese)",
+    "1/2 cup sugar",
+    "1 tbsp semolina (suji)",
+    "Cardamom powder",
+    "Cashews and raisins",
+    "Ghee for greasing"
+  ],
+  steps: [
+    "Mix chhena with sugar until smooth",
+    "Add semolina, cardamom, nuts and mix well",
+    "Grease a tin with ghee and pour mixture",
+    "Bake at 180°C for 45 mins or until golden",
+    "Cool and slice before serving"
+  ],
+  cookingTime: "60 minutes",
+  mealType: "dessert",
+  spiceLevel: "none",
+  vegetarian: true,
+  region: "East India"
+},
+{
+  id: 14,
+  name: "Shorshe Ilish",
+  image: "https://media.istockphoto.com/id/2169713385/photo/tasty-shorshe-ilish-on-a-white-plate-on-a-light-wooden-surface-this-recipe-is-made-from-hilsa.jpg?b=1&s=612x612&w=0&k=20&c=i7lrLS4_95NjiCNWFqxsm4nNED9NqlGg1uytBq2S6a0=",
+  ingredients: [
+    "500g hilsa (ilish) fish slices",
+    "2 tbsp mustard seeds",
+    "2 green chilies",
+    "1/2 tsp turmeric powder",
+    "Mustard oil",
+    "Salt to taste"
+  ],
+  steps: [
+    "Make a paste of mustard seeds and green chilies",
+    "Marinate fish with salt and turmeric",
+    "Heat mustard oil, add paste and a bit of water",
+    "Add fish slices and cook gently",
+    "Cover and simmer for 10–12 minutes",
+    "Drizzle raw mustard oil before serving"
+  ],
+  cookingTime: "30 minutes",
+  mealType: "lunch",
+  spiceLevel: "medium",
+  vegetarian: false,
+  region: "East India"
+},
+{
+  id: 15,
+  name: "Ghugni",
+  image: "https://media.istockphoto.com/id/2216703963/photo/ghugni-is-a-famous-street-food-of-eastern-india-it-is-made-with-spices-chanachur-tomatoes.jpg?b=1&s=612x612&w=0&k=20&c=qVqAYfQR5fLX4h297OPfjzZu32hendy0cfJrnUZdfKg=",
+  ingredients: [
+    "1 cup dried yellow peas",
+    "1 onion (chopped)",
+    "1 tomato",
+    "Ginger paste",
+    "Cumin, coriander powder",
+    "Green chilies, tamarind (optional)"
+  ],
+  steps: [
+    "Soak peas overnight, then pressure cook",
+    "Sauté onions, ginger, and spices in oil",
+    "Add tomatoes and cooked peas",
+    "Simmer until thick and flavorful",
+    "Garnish with chopped onions and coriander",
+    "Serve hot with puffed rice or bread"
+  ],
+  cookingTime: "35 minutes",
+  mealType: "snack",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "East India"
+}, 
+{
+  id: 16,
+  name: "Aloo Posto",
+  image: "https://media.istockphoto.com/id/2154971675/photo/famous-bengali-food-aloo-posto-made-with-potato-and-poppy-seeds-serve-on-a-white-ceramic-bowl.jpg?b=1&s=612x612&w=0&k=20&c=Fot9U_WFy6pZDuhT9rOc3m3KZLSLJmxICAYLPu4i2jY=",
+  ingredients: [
+    "3 potatoes (cubed)",
+    "2 tbsp poppy seed paste",
+    "1 green chili",
+    "1/2 tsp kalonji (nigella seeds)",
+    "Mustard oil",
+    "Salt"
+  ],
+  steps: [
+    "Heat mustard oil, temper with kalonji",
+    "Add potatoes and sauté for 5 minutes",
+    "Add poppy seed paste, green chili, and water",
+    "Simmer until potatoes are soft and coated",
+    "Serve with steamed rice"
+  ],
+  cookingTime: "25 minutes",
+  mealType: "lunch",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "East India"
+},
+{
+  id: 17,
+  name: "Vegetable Sambar",
+  image: "https://media.istockphoto.com/id/1150452182/photo/image-of-indian-sambar-meal-food-sambar-stew-soup-with-lentils-in-dish-for-south-indian.jpg?b=1&s=612x612&w=0&k=20&c=t7kZBiBSLkh-f-OAd8iuwsK4nbWwJuB8eSlQ3ETXg2Q=",
+  ingredients: [
+    "1/2 cup toor dal (pigeon peas)",
+    "1 cup mixed vegetables (carrot, drumstick, brinjal, etc.)",
+    "1 tomato (chopped)",
+    "1 onion (sliced)",
+    "2 tsp sambar powder",
+    "Tamarind pulp (1 tbsp)",
+    "1/2 tsp mustard seeds",
+    "1/4 tsp asafoetida (hing)",
+    "Curry leaves",
+    "Salt and turmeric",
+    "Oil or ghee"
+  ],
+  steps: [
+    "Pressure cook toor dal with turmeric until soft",
+    "Cook chopped vegetables in water with salt and turmeric",
+    "Add cooked dal, tamarind pulp, and sambar powder to veggies",
+    "Simmer for 10–15 minutes",
+    "Heat oil, add mustard seeds, hing, curry leaves (tadka)",
+    "Pour tadka over the sambar and serve hot with rice or idli"
+  ],
+  cookingTime: "45 minutes",
+  mealType: "lunch",
+  spiceLevel: "medium",
+  vegetarian: true,
+  region: "South India"
+}, 
+{
+  id: 25,
+  name: "Aloo Paratha",
+  image: "https://media.istockphoto.com/id/1951940755/photo/close-up-image-of-indian-breakfast-dish-buffet-triangular-slices-of-aloo-parathas-on-white.jpg?b=1&s=612x612&w=0&k=20&c=G2IJK3oO9g3dWOZT-VIoyCjLIPbNr5E7SMYZOFrZ5EI=",
+  ingredients: [
+    "2 cups whole wheat flour",
+    "2 boiled potatoes (mashed)",
+    "1 green chili (chopped)",
+    "1 tsp grated ginger",
+    "Coriander leaves",
+    "Ajwain or cumin seeds",
+    "Salt, oil or ghee"
+  ],
+  steps: [
+    "Knead dough with flour, water, and a pinch of salt",
+    "Mix mashed potatoes with spices, chili, and herbs",
+    "Roll dough balls, stuff with potato filling, and roll again",
+    "Cook on a hot tawa with ghee until golden on both sides",
+    "Serve hot with curd and pickle"
+  ],
+  cookingTime: "35 minutes",
+  mealType: "breakfast",
+  spiceLevel: "medium",
+  vegetarian: true,
+  region: "North India"
+},
+{
+  id: 26,
+  name: "Poha",
+  image: "https://media.istockphoto.com/id/1198052406/photo/poha-a-traditional-indian-breakfastac.jpg?b=1&s=612x612&w=0&k=20&c=rDUdZDbLMCszmy0hoi1Htjmhk69FOQYYSpnASttpsuU=",
+  ingredients: [
+    "1.5 cups flattened rice (poha)",
+    "1 onion (chopped)",
+    "1 green chili",
+    "1/4 tsp mustard seeds",
+    "1/4 tsp turmeric powder",
+    "Curry leaves, peanuts",
+    "Lemon juice, coriander, salt"
+  ],
+  steps: [
+    "Rinse poha in water and drain well",
+    "Heat oil, fry mustard seeds, curry leaves, chilies, and peanuts",
+    "Add onions, sauté till soft, then add turmeric and poha",
+    "Mix gently and cook for 2–3 minutes",
+    "Garnish with lemon juice and fresh coriander",
+    "Serve hot"
+  ],
+  cookingTime: "20 minutes",
+  mealType: "breakfast",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "North India"
+},
+{
+  id: 28,
+  name: "Methi Thepla",
+  image: "https://media.istockphoto.com/id/1330523075/photo/whole-wheat-methi-thepla-rolls-with-paneer-capsicum-filling-and-a-bowl-of-masala-curd.jpg?b=1&s=612x612&w=0&k=20&c=WOJN_iooyQP5KL0_RFXHUAF4k4rtWg7hG7RdmXtZxNA=",
+  ingredients: [
+    "1.5 cups whole wheat flour",
+    "1 cup fresh fenugreek leaves (methi)",
+    "1/4 tsp turmeric",
+    "1/2 tsp red chili powder",
+    "1/2 tsp cumin seeds",
+    "Salt, yogurt, oil"
+  ],
+  steps: [
+    "Mix flour, methi, spices, salt, and yogurt to form soft dough",
+    "Roll into thin flatbreads",
+    "Cook on a hot tawa with oil until golden on both sides",
+    "Serve with curd or pickle"
+  ],
+  cookingTime: "30 minutes",
+  mealType: "breakfast",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "West India"
+},
+{
+  id: 27,
+  name: "Kanda Poha",
+  image: "https://media.istockphoto.com/id/1093257580/photo/aloo-kanda-poha-or-tarri-pohe-with-spicy-chana-masala-curry-selective-focus.jpg?b=1&s=612x612&w=0&k=20&c=BK1uQa5UHQFO1Fwnlza5QzU5Yuj3TB7alUDeu18a0bk=",
+  ingredients: [
+    "1.5 cups flattened rice (poha)",
+    "1 onion (finely chopped)",
+    "1 green chili",
+    "1/2 tsp mustard seeds",
+    "1/4 tsp turmeric",
+    "Curry leaves",
+    "Salt, lemon juice, coriander",
+    "Peanuts (optional)"
+  ],
+  steps: [
+    "Rinse and drain poha",
+    "Heat oil, temper mustard seeds, curry leaves, and green chili",
+    "Sauté onions, add turmeric",
+    "Add poha, salt and mix gently",
+    "Cook for 2–3 minutes, finish with lemon juice and coriander",
+    "Serve hot"
+  ],
+  cookingTime: "20 minutes",
+  mealType: "breakfast",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "West India"
+},
+{
+  id: 31,
+  name: "Luchi with Aloor Tarkari",
+  image: "https://media.istockphoto.com/id/1390699656/photo/south-indian-famous-breakfast-poori-or-puri-with-potato-curry-served-in-a-plate-with-banana.jpg?b=1&s=612x612&w=0&k=20&c=eGgAhif-JAXHOrOH7CbLQpNnkCpAwqeruQEm44FctHM=",
+  ingredients: [
+    "2 cups maida (refined flour)",
+    "1 tbsp oil or ghee",
+    "1/2 tsp salt",
+    "Water and oil for frying",
+    "For aloor tarkari:",
+    "3 boiled potatoes",
+    "1 tomato",
+    "1/2 tsp panch phoron",
+    "1/4 tsp turmeric, salt",
+    "1 green chili, mustard oil"
+  ],
+  steps: [
+    "Knead maida with salt, oil, and water into a soft dough",
+    "Rest 20 mins, roll small discs, deep-fry until puffed",
+    "For curry: heat oil, add panch phoron, tomato, chili",
+    "Add mashed potatoes, turmeric, salt, and water",
+    "Simmer 10–15 mins, mash slightly for texture",
+    "Serve hot with luchi"
+  ],
+  cookingTime: "45 minutes",
+  mealType: "breakfast",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "East India"
+},
+{
+  id: 32,
+  name: "Chirer Polao",
+  image: "https://media.istockphoto.com/id/1312518501/photo/indian-food-poha-with-peanuts-in-a-wok.jpg?s=612x612&w=0&k=20&c=_5CYETpelqSX3CXrlUZd5sQzR8KXHKEvcSsifd0RPFk=",
+  ingredients: [
+    "1.5 cups chire (poha)",
+    "1 potato (cubed)",
+    "1/4 cup green peas",
+    "2 green chilies",
+    "1/2 tsp turmeric",
+    "1/2 tsp sugar, salt",
+    "Cashews, raisins",
+    "Mustard oil or ghee"
+  ],
+  steps: [
+    "Wash and drain chire (poha)",
+    "Heat oil/ghee, fry cashews, raisins, set aside",
+    "Fry potatoes and peas with turmeric",
+    "Add chilies, then poha, salt, sugar",
+    "Mix gently and top with cashews and raisins",
+    "Serve warm with tea"
+  ],
+  cookingTime: "25 minutes",
+  mealType: "breakfast",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "East India"
+},
+{
+  id: 33,
+  name: "Radhaballabhi with Cholar Dal",
+  image: "https://media.istockphoto.com/id/1398443655/photo/gram-pulses-dal-and-paratha.jpg?s=612x612&w=0&k=20&c=XpmYdBM9rEnpCM9JgeSwFm_Dnc7mWMu8HEbnvwlLMnw=",
+  ingredients: [
+    "2 cups maida (refined flour)",
+    "1/2 cup urad dal (soaked)",
+    "1/2 tsp fennel seeds",
+    "Salt, oil or ghee",
+    "For cholar dal:",
+    "1 cup chana dal",
+    "1 bay leaf, 1 dry chili",
+    "1/2 tsp cumin seeds",
+    "1/4 tsp turmeric, salt, sugar",
+    "Grated ginger, coconut pieces, ghee"
+  ],
+  steps: [
+    "Grind soaked urad dal with fennel into a paste",
+    "Knead maida with salt and oil; stuff with dal paste and roll",
+    "Fry puris in hot oil until puffed",
+    "Boil chana dal with turmeric and salt",
+    "Temper ghee with cumin, bay leaf, chili, and ginger",
+    "Add coconut pieces, sugar, and cooked dal",
+    "Serve dal hot with radhaballabhi"
+  ],
+  cookingTime: "50 minutes",
+  mealType: "breakfast",
+  spiceLevel: "medium",
+  vegetarian: true,
+  region: "East India"
+},
+{
+  id: 37,
+  name: "Vegetable Kurma",
+  image: "https://media.istockphoto.com/id/2192664759/photo/mix-vegetable-curry-indian.jpg?s=612x612&w=0&k=20&c=GZGlULW5S9ylNtshQB-MFCY3A1gX-QAfMkIDTJcmj_Q=",
+  ingredients: [
+    "1 cup mixed vegetables (carrot, beans, potato, peas)",
+    "1 onion, 1 tomato",
+    "1 tsp ginger-garlic paste",
+    "1/2 tsp fennel seeds",
+    "1/2 cup coconut",
+    "2 green chilies",
+    "Cashews (6–8), cinnamon, cloves, cardamom",
+    "Salt, oil"
+  ],
+  steps: [
+    "Grind coconut, green chili, cashews, and spices into a paste",
+    "Sauté onion, tomato, ginger-garlic paste in oil",
+    "Add vegetables and cook with salt",
+    "Add ground paste and some water",
+    "Simmer until veggies are soft and kurma thickens",
+    "Serve with chapati, parotta, or rice"
+  ],
+  cookingTime: "40 minutes",
+  mealType: "lunch",
+  spiceLevel: "medium",
+  vegetarian: true,
+  region: "South India"
+},
+{
+  id: 36,
+  name: "Dal Dhokli",
+  image: "https://media.istockphoto.com/id/897995248/photo/indian-masala-egg-omelet.jpg?s=612x612&w=0&k=20&c=QVqw53JOuZxw8wbhtaN5yvyAE3VK5Y-Rn4gjnEV55LM=",
+  ingredients: [
+    "1 cup toor dal",
+    "1 tomato (chopped)",
+    "1/4 tsp turmeric, salt",
+    "1 tsp jaggery, lemon juice",
+    "1 tsp mustard & cumin seeds",
+    "Curry leaves, green chili, hing",
+    "For dhokli dough: whole wheat flour, ajwain, turmeric, red chili powder, oil"
+  ],
+  steps: [
+    "Cook dal with turmeric and tomato until soft",
+    "Knead dough and roll out thin sheets, cut into diamond shapes",
+    "Drop dhokli pieces into simmering dal",
+    "Cook until soft (10–12 mins)",
+    "Temper with mustard, cumin, chili, hing, and curry leaves",
+    "Finish with jaggery and lemon juice"
+  ],
+  cookingTime: "50 minutes",
+  mealType: "lunch",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "West India"
+},
+{
+  id: 38,
+  name: "Rajma",
+  image: "https://media.istockphoto.com/id/1284710180/photo/rajma-masala-curry-in-black-bowl-on-dark-slate-table-top-red-kidney-bean-dal-is-indian.jpg?s=612x612&w=0&k=20&c=PI0PVtfQjmXk2FrP0F4yDtkSPK-vMLPlT5hYh5302sA=",
+  ingredients: [
+    "1 cup rajma (kidney beans, soaked overnight)",
+    "1 onion, 2 tomatoes",
+    "1 tsp ginger-garlic paste",
+    "1 tsp cumin seeds",
+    "1/2 tsp turmeric, 1 tsp coriander powder",
+    "1 tsp garam masala",
+    "Salt, oil or ghee, coriander leaves"
+  ],
+  steps: [
+    "Pressure cook soaked rajma until soft",
+    "Sauté cumin seeds, onion, and ginger-garlic paste",
+    "Add chopped tomatoes and spices",
+    "Cook until oil separates",
+    "Add boiled rajma and simmer for 15–20 mins",
+    "Garnish with coriander and serve with rice"
+  ],
+  cookingTime: "60 minutes",
+  mealType: "lunch",
+  spiceLevel: "medium",
+  vegetarian: true,
+  region: "North India"
+},
+{
+  id: 39,
+  name: "Tomato Rasam with Rice",
+  image: "https://media.istockphoto.com/id/879641842/photo/red-curry.jpg?s=612x612&w=0&k=20&c=-oVPhaiSoQJYJ1gj--xF6wrhOHd1mslg33GzRJocHn0=",
+  ingredients: [
+    "2 tomatoes (chopped)",
+    "1/2 tsp black pepper",
+    "1/2 tsp cumin seeds",
+    "1/4 tsp mustard seeds",
+    "1 tsp tamarind pulp",
+    "A pinch of hing",
+    "Curry leaves, coriander",
+    "Salt, ghee"
+  ],
+  steps: [
+    "Mash tomatoes with water, add tamarind, salt, pepper, and cumin",
+    "Boil for 5–7 mins",
+    "Temper mustard seeds, curry leaves, and hing in ghee",
+    "Pour tempering into rasam",
+    "Garnish with coriander and serve hot with rice"
+  ],
+  cookingTime: "25 minutes",
+  mealType: "dinner",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "South India"
+},
+{
+  id: 40,
+  name: "Shukto",
+  image: "https://media.istockphoto.com/id/2149614089/photo/selective-focus-of-famous-bengali-recipe-shukto.jpg?s=612x612&w=0&k=20&c=L1MvFmCUvz8qq7l5xZBdAzc8TkzOVNL5BkWofte17lY=",
+  ingredients: [
+    "1/2 cup bitter gourd (sliced)",
+    "1/2 cup raw banana, potato, eggplant",
+    "1 tbsp mustard paste",
+    "1/2 tsp panch phoron",
+    "1 tbsp poppy seed paste",
+    "1/2 cup milk",
+    "Salt, sugar, ghee"
+  ],
+  steps: [
+    "Fry bitter gourd, set aside",
+    "Sauté panch phoron, add chopped veggies",
+    "Add water, salt, cook until soft",
+    "Mix mustard and poppy seed paste, add to veggies",
+    "Add milk and sugar, simmer gently",
+    "Top with ghee and serve with rice"
+  ],
+  cookingTime: "40 minutes",
+  mealType: "dinner",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "East India"
+},
+{
+  id: 41,
+  name: "Dalma",
+  image: "https://media.istockphoto.com/id/1323640022/photo/healthy-and-organic-sprouted-horse-gram-sambar-in-a-bowl.jpg?s=612x612&w=0&k=20&c=4TSIhGXWHUH5H4hCKh6N0XRZXeTjj_YPgmOJKxhgyXY=",
+  ingredients: [
+    "1 cup toor dal",
+    "1/2 cup raw banana, pumpkin, potato, carrot",
+    "1/2 tsp cumin & mustard seeds",
+    "1 dry red chili",
+    "1/2 tsp grated ginger",
+    "1/4 tsp turmeric",
+    "Salt, ghee"
+  ],
+  steps: [
+    "Boil dal and chopped vegetables with turmeric and salt",
+    "Heat ghee, temper mustard, cumin, ginger, and chili",
+    "Add to dal and mix well",
+    "Serve hot with rice and papad"
+  ],
+  cookingTime: "35 minutes",
+  mealType: "dinner",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "East India"
+},
+{
+  id: 42,
+  name: "Masala Bhaat",
+  image: "https://media.istockphoto.com/id/1146289003/photo/traditional-indian-street-food-rice-with-vegetables-close-up-on-a-plate-horizontal.jpg?s=612x612&w=0&k=20&c=Ikb_QsWs1yjKMs8izmdkAjUc2BAiBQCLOzL9uWZ7-aY=",
+  ingredients: [
+    "1 cup rice",
+    "1/2 cup vegetables (brinjal, carrot, peas)",
+    "1 tsp goda masala or garam masala",
+    "1/2 tsp mustard seeds",
+    "1 green chili, curry leaves",
+    "1/4 tsp turmeric, salt, oil/ghee",
+    "Grated coconut & coriander"
+  ],
+  steps: [
+    "Cook rice until fluffy",
+    "Sauté mustard seeds, chili, curry leaves, and veggies",
+    "Add masala and turmeric",
+    "Mix in cooked rice, adjust salt",
+    "Top with coconut and coriander, serve hot"
+  ],
+  cookingTime: "30 minutes",
+  mealType: "dinner",
+  spiceLevel: "medium",
+  vegetarian: true,
+  region: "West India"
+},
+{
+  id: 43,
+  name: "Gujarati Kadhi",
+  image: "https://media.istockphoto.com/id/1317650416/photo/close-up-of-healthy-curry-of-yogurt-and-potato-an-indian-classical-dish-served-in-a-glass.jpg?s=612x612&w=0&k=20&c=ufj9lXeXF-mDnCuJSxa6HQRttvxCEk7ohWrbdpBLJB4=",
+  ingredients: [
+    "1 cup yogurt",
+    "2 tbsp besan (gram flour)",
+    "1/2 tsp mustard & cumin seeds",
+    "1 dry red chili",
+    "Curry leaves, ginger",
+    "Sugar, salt, turmeric",
+    "Ghee or oil"
+  ],
+  steps: [
+    "Whisk yogurt, besan, turmeric, salt, and water",
+    "Simmer gently while stirring to avoid curdling",
+    "Temper ghee with mustard, cumin, chili, curry leaves, ginger",
+    "Add tempering to kadhi",
+    "Add sugar to taste, serve with steamed rice"
+  ],
+  cookingTime: "30 minutes",
+  mealType: "dinner",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "West India"
+},
+{
+  id: 44,
+  name: "Medu Vada",
+  image: "https://media.istockphoto.com/id/1292633263/photo/indian-fried-snack-medu-vada-with-sambar-and-coconut-chutney-in-plate-on-rustic-wooden.jpg?s=612x612&w=0&k=20&c=I24Sl76Qq4ly7WlI3HJJa8VfCIkBxvsgVZ8mAb81ZEA=",
+  ingredients: [
+    "1 cup urad dal (soaked 4–5 hrs)",
+    "1 tsp chopped ginger",
+    "2 green chilies (chopped)",
+    "Few curry leaves",
+    "1/2 tsp black pepper",
+    "Salt, oil for frying"
+  ],
+  steps: [
+    "Grind soaked dal into thick batter",
+    "Mix in spices, ginger, chilies, and curry leaves",
+    "Wet hands, shape into vada with hole in center",
+    "Deep-fry until golden and crisp",
+    "Serve with coconut chutney and sambar"
+  ],
+  cookingTime: "40 minutes",
+  mealType: "snack",
+  spiceLevel: "medium",
+  vegetarian: true,
+  region: "South India"
+},
+{
+  id: 45,
+  name: "Chana Sundal",
+  image: "https://media.istockphoto.com/id/513594324/photo/indian-food-brown-chickpea-curry.jpg?s=612x612&w=0&k=20&c=t6Sq0hpPMWa10gvCV4cHkDeS5yDcySorBVaWgP5Uzo4=",
+  ingredients: [
+    "1 cup white chana (soaked and boiled)",
+    "1/2 tsp mustard seeds",
+    "1 dry red chili, 1 green chili",
+    "1 tbsp grated coconut",
+    "Few curry leaves",
+    "Hing, salt, oil"
+  ],
+  steps: [
+    "Heat oil, add mustard seeds, hing, chilies, curry leaves",
+    "Add boiled chana and salt",
+    "Sauté for 2–3 mins, mix in grated coconut",
+    "Serve warm as a healthy protein-rich snack"
+  ],
+  cookingTime: "20 minutes",
+  mealType: "snack",
+  spiceLevel: "mild",
+  vegetarian: true,
+  region: "South India"
+},
+{
+  id: 46,
+  name: "Nimki",
+  image: "https://media.istockphoto.com/id/1137583441/photo/crunchy-namkeen-matar.jpg?s=612x612&w=0&k=20&c=HJWbtZiapM9wx5XjDicBQ6ORB0shwVLMR3LeMPuU-HI=",
+  ingredients: [
+    "1 cup maida (refined flour)",
+    "1 tsp kalonji (nigella seeds)",
+    "2 tbsp ghee",
+    "Salt, water, oil for frying"
+  ],
+  steps: [
+    "Mix maida, salt, kalonji, and ghee into stiff dough",
+    "Roll into thin sheet, cut into diamonds",
+    "Deep-fry on low-medium heat until crisp",
+    "Cool and store in airtight container"
+  ],
+  cookingTime: "30 minutes",
+  mealType: "snack",
+  spiceLevel: "low",
+  vegetarian: true,
+  region: "East India"
+},
+{
+  id: 47,
+  name: "Aloo Tikki",
+  image: "https://media.istockphoto.com/id/1204866803/photo/indian-potato-patties-aloo-tikki-served-with-yogurt-close-up-in-a-dish-horizontal-top-view.jpg?s=612x612&w=0&k=20&c=G7VRISuqTrUi_1D6O_EtjH2b1VH6H2yR-D9HKD7ro9s=",
+  ingredients: [
+    "3 boiled potatoes",
+    "1 tsp grated ginger",
+    "1/2 tsp chili powder, chaat masala",
+    "1 tbsp cornflour",
+    "Salt, oil for shallow fry",
+    "Coriander leaves"
+  ],
+  steps: [
+    "Mash potatoes with spices, cornflour, ginger, and herbs",
+    "Shape into flat tikkis",
+    "Shallow-fry on both sides until golden",
+    "Serve with chutney or curd"
+  ],
+  cookingTime: "25 minutes",
+  mealType: "snack",
+  spiceLevel: "medium",
+  vegetarian: true,
+  region: "North India"
+},
+{
+  id: 48,
+  name: "Moong Dal Pakora",
+  image: "https://media.istockphoto.com/id/186334648/photo/moong-daal-pakora.jpg?s=612x612&w=0&k=20&c=U4XSuGdeg6XFKbSF1rqdhJRp3n-pDd5hf-c6l_sGN3w=",
+  ingredients: [
+    "1 cup yellow moong dal (soaked 3–4 hrs)",
+    "1 onion (chopped)",
+    "1 green chili",
+    "Coriander leaves, hing, salt",
+    "Oil for deep frying"
+  ],
+  steps: [
+    "Grind dal coarsely without water",
+    "Add onion, chili, salt, coriander, hing",
+    "Drop spoonfuls into hot oil, fry until golden",
+    "Serve hot with green chutney"
+  ],
+  cookingTime: "30 minutes",
+  mealType: "snack",
+  spiceLevel: "medium",
+  vegetarian: true,
+  region: "North India"
+},
+{
+  id: 49,
+  name: "Rava Kesari",
+  image: "https://media.istockphoto.com/id/1456403864/photo/homemade-rava-kesari.jpg?s=612x612&w=0&k=20&c=CthGf4DIGDlCS-buAu2wswUX1E-s3NEiGhDDElO41Rk=",
+  ingredients: [
+    "1 cup rava (semolina)",
+    "1 cup sugar",
+    "2.5 cups water",
+    "1/4 cup ghee",
+    "Few cashews and raisins",
+    "1/4 tsp cardamom powder",
+    "A pinch of orange food color (optional)"
+  ],
+  steps: [
+    "Roast rava in ghee until fragrant; set aside",
+    "Boil water, add food color and sugar",
+    "Slowly add rava while stirring to avoid lumps",
+    "Cook till thick, add cardamom, ghee",
+    "Fry cashews & raisins in ghee and add on top"
+  ],
+  cookingTime: "25 minutes",
+  mealType: "dessert",
+  spiceLevel: "none",
+  vegetarian: true,
+  region: "South India"
+},
+{
+  id: 50,
+  name: "Paal Payasam",
+  image: "https://media.istockphoto.com/id/1388311003/photo/sabudana-kheer-sabudhana-paayaasam-indian-traditional-sweet-closeup-with-selective-focus-and.jpg?s=612x612&w=0&k=20&c=5aHa5no5idgTWXNpT_Xw5RNk1nwALTD7ozMok4C3VEE=",
+  ingredients: [
+    "1/4 cup raw rice",
+    "1 liter full-fat milk",
+    "1/2 cup sugar",
+    "1/4 tsp cardamom powder",
+    "Cashews and raisins",
+    "Ghee"
+  ],
+  steps: [
+    "Wash rice and simmer with milk on low heat",
+    "Stir often till rice is soft and mixture thickens",
+    "Add sugar and cardamom powder",
+    "Fry cashews & raisins in ghee, mix in",
+    "Serve warm or chilled"
+  ],
+  cookingTime: "45 minutes",
+  mealType: "dessert",
+  spiceLevel: "none",
+  vegetarian: true,
+  region: "South India"
+},
+{
+  id: 51,
+  name: "Gajar ka Halwa",
+  image: "https://media.istockphoto.com/id/1645768909/photo/gajar-halwa-or-carrot-halva-with-nuts-almond-pistachio-khoya-milk-and-oil-served-in-dish.jpg?s=612x612&w=0&k=20&c=SjTk6r5XoH_RmJx4juKuy3FbleWlS1duhv7GMxu2shA=",
+  ingredients: [
+    "2 cups grated carrots",
+    "1 cup full-fat milk",
+    "1/4 cup sugar",
+    "2 tbsp ghee",
+    "Cashews, raisins",
+    "1/4 tsp cardamom powder"
+  ],
+  steps: [
+    "Heat ghee, sauté grated carrots for 5 mins",
+    "Add milk, cook till thick and soft",
+    "Add sugar, cook until moisture evaporates",
+    "Add cardamom, nuts and raisins",
+    "Serve warm"
+  ],
+  cookingTime: "40 minutes",
+  mealType: "dessert",
+  spiceLevel: "none",
+  vegetarian: true,
+  region: "North India"
+},
+{
+  id: 52,
+  name: "Shrikhand",
+  image: "https://media.istockphoto.com/id/978382118/photo/shrikhand-or-srikhand-is-an-indian-dessert-made-of-strained-yogurt-garnished-with-dry-fruits.jpg?s=612x612&w=0&k=20&c=dsmWnIKQUEXp7SHovIvwr3wxu0ekfHjFMtyROOA5bcE=",
+  ingredients: [
+    "2 cups hung curd (yogurt)",
+    "1/2 cup powdered sugar",
+    "1/4 tsp cardamom powder",
+    "Few saffron strands soaked in warm milk",
+    "Chopped pistachios/almonds"
+  ],
+  steps: [
+    "Whisk hung curd till smooth",
+    "Add sugar, cardamom, and saffron milk",
+    "Mix well and chill",
+    "Top with nuts and serve"
+  ],
+  cookingTime: "15 minutes (plus chilling)",
+  mealType: "dessert",
+  spiceLevel: "none",
+  vegetarian: true,
+  region: "West India"
+},
+{
+  id: 53,
+  name: "Basundi",
+  image: "https://media.istockphoto.com/id/618455006/photo/basundi-rabri-indian-milk-pudding-for-diwali.jpg?s=612x612&w=0&k=20&c=mjwDKdrvh4jIlc5Al1tcl_f4z3wP56O6hiCupfisTBY=",
+  ingredients: [
+    "1 liter full-fat milk",
+    "1/4 cup sugar",
+    "Few saffron strands",
+    "Chopped almonds, pistachios",
+    "1/4 tsp cardamom powder"
+  ],
+  steps: [
+    "Boil and simmer milk until thickened (reduce by 1/3)",
+    "Add sugar, cardamom, and saffron",
+    "Cook till slightly creamy",
+    "Cool, garnish with nuts",
+    "Serve chilled"
+  ],
+  cookingTime: "45 minutes",
+  mealType: "dessert",
+  spiceLevel: "none",
+  vegetarian: true,
+  region: "West India"
+},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+    ];
+
+    const App = () => {
+      const [recipes, setRecipes] = useState(recipeData);
+      const [searchTerm, setSearchTerm] = useState("");
+      const [favorites, setFavorites] = useState([]);
+      const [darkMode, setDarkMode] = useState(false);
+      const [selectedMeal, setSelectedMeal] = useState("all");
+      const [selectedSpiceLevel, setSelectedSpiceLevel] = useState("all");
+      const [selectedVegetarian, setSelectedVegetarian] = useState("all");
+      const [selectedRegion, setSelectedRegion] = useState("all");
+      const [isListening, setIsListening] = useState(false);
+      const [selectedRecipe, setSelectedRecipe] = useState(null);
+
+      // Load favorites from localStorage
+      useEffect(() => {
+        const savedFavorites = localStorage.getItem('recipeFavorites');
+        if (savedFavorites) {
+          setFavorites(JSON.parse(savedFavorites));
+        }
+
+        // Check for dark mode preference
+        const darkModePref = localStorage.getItem('darkMode');
+        if (darkModePref === 'true') {
+          setDarkMode(true);
+          document.body.classList.add('dark');
+        }
+      }, []);
+
+      // Save favorites to localStorage when they change
+      useEffect(() => {
+        localStorage.setItem('recipeFavorites', JSON.stringify(favorites));
+      }, [favorites]);
+
+      // Toggle dark mode
+      const toggleDarkMode = () => {
+        const newMode = !darkMode;
+        setDarkMode(newMode);
+        localStorage.setItem('darkMode', newMode.toString());
+        if (newMode) {
+          document.body.classList.add('dark');
+        } else {
+          document.body.classList.remove('dark');
+        }
+      };
+
+      // Filter recipes based on search and filters
+      useEffect(() => {
+        let filtered = [...recipeData];
+
+        if (searchTerm) {
+          filtered = filtered.filter(recipe =>
+            recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            recipe.ingredients.some(ingredient =>
+              ingredient.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+          );
+        }
+
+        if (selectedMeal !== "all") {
+          filtered = filtered.filter(recipe => recipe.mealType === selectedMeal);
+        }
+
+        if (selectedSpiceLevel !== "all") {
+          filtered = filtered.filter(recipe => recipe.spiceLevel === selectedSpiceLevel);
+        }
+
+        if (selectedVegetarian !== "all") {
+          const vegFilter = selectedVegetarian === "vegetarian";
+          filtered = filtered.filter(recipe => recipe.vegetarian === vegFilter);
+        }
+
+        if (selectedRegion !== "all") {
+          filtered = filtered.filter(recipe => recipe.region === selectedRegion);
+        }
+
+        setRecipes(filtered);
+      }, [searchTerm, selectedMeal, selectedSpiceLevel, selectedVegetarian, selectedRegion]);
+
+      // Toggle favorite status
+      const toggleFavorite = (recipeId) => {
+        if (favorites.includes(recipeId)) {
+          setFavorites(favorites.filter(id => id !== recipeId));
+        } else {
+          setFavorites([...favorites, recipeId]);
+        }
+      };
+
+      // Voice search
+      const handleVoiceSearch = () => {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        
+        setIsListening(true);
+        
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          setSearchTerm(transcript);
+          setIsListening(false);
+        };
+        
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error', event.error);
+          setIsListening(false);
+        };
+        
+        recognition.start();
+      };
+
+      // Close recipe details modal
+      const closeRecipeDetails = () => {
+        setSelectedRecipe(null);
+      };
+
+      return (
+        <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
+          <div className="container mx-auto px-4 py-8">
+            {/* Header */}
+            <header className="flex flex-col md:flex-row justify-between items-center mb-8">
+              <div className="flex items-center mb-4 md:mb-0">
+                <img 
+                  src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/83cf271c-b2c8-4c8d-840f-f219d32a0540.png" 
+                  alt="Chef hat symbol representing Indian cuisine" 
+                  className="w-16 h-16 mr-4 rounded-full"
+                />
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Indian Recipe </h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <button 
+                  onClick={toggleDarkMode}
+                  className="p-2 rounded-full bg-gray-200 dark:bg-gray-700"
+                >
+                  {darkMode ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
+                  className="p-2 rounded-full bg-indigo-600 text-white"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                </button>
+              </div>
+            </header>
+
+            {/* Search and Filters */}
+            <div className="mb-8">
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="relative flex-grow">
+                  <input
+                    type="text"
+                    placeholder="Search recipes or ingredients..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <button
+                    onClick={handleVoiceSearch}
+                    className={`absolute right-3 top-3 ${isListening ? 'text-red-500 animate-pulse' : 'text-gray-500 dark:text-gray-400'}`}
+                    disabled={isListening}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    setSearchTerm("");
+                    setSelectedMeal("all");
+                    setSelectedSpiceLevel("all");
+                    setSelectedVegetarian("all");
+                    setSelectedRegion("all");
+                  }}
+                  className="px-4 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                >
+                  Clear Filters
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {/* Meal Type Filter */}
+                <div>
+                  <label htmlFor="meal-type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Meal Type</label>
+                  <select
+                    id="meal-type"
+                    value={selectedMeal}
+                    onChange={(e) => setSelectedMeal(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="breakfast">Breakfast</option>
+                    <option value="lunch">Lunch</option>
+                    <option value="dinner">Dinner</option>
+                    <option value="snack">Snack</option>
+                    <option value="dessert">Dessert</option>
+                  </select>
+                </div>
+
+                {/* Spice Level Filter */}
+                <div>
+                  <label htmlFor="spice-level" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Spice Level</label>
+                  <select
+                    id="spice-level"
+                    value={selectedSpiceLevel}
+                    onChange={(e) => setSelectedSpiceLevel(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="all">All Levels</option>
+                    <option value="mild">Mild</option>
+                    <option value="medium">Medium</option>
+                    <option value="hot">Hot</option>
+                    <option value="none">None</option>
+                  </select>
+                </div>
+
+                {/* Vegetarian Filter */}
+                <div>
+                  <label htmlFor="vegetarian" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Diet</label>
+                  <select
+                    id="vegetarian"
+                    value={selectedVegetarian}
+                    onChange={(e) => setSelectedVegetarian(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="all">All Diets</option>
+                    <option value="vegetarian">Vegetarian</option>
+                    <option value="non-vegetarian">Non-Vegetarian</option>
+                  </select>
+                </div>
+
+                {/* Region Filter */}
+                <div>
+                  <label htmlFor="region" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Region</label>
+                  <select
+                    id="region"
+                    value={selectedRegion}
+                    onChange={(e) => setSelectedRegion(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="all">All Regions</option>
+                    <option value="North India">North India</option>
+                    <option value="South India">South India</option>
+                    <option value="West India">West India</option>
+                    <option value="East India">East India</option>
+                  </select>
+                </div>
+
+                {/* Favorites Filter */}
+                {/* Favorites Filter */}
+<div className="flex items-end">
+  <button
+    onClick={() => setRecipes(favorites.length > 0 ? recipeData.filter(recipe => favorites.includes(recipe.id)) : [])}
+    className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition"
+  >
+    Show Favorites ({favorites.length})
+  </button>
+</div>
+
+              </div>
+            </div>
+
+            {/* Recipe List */}
+            {recipes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recipes.map(recipe => (
+                  <div 
+                    key={recipe.id} 
+                    className="recipe-card bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer"
+                    onClick={() => setSelectedRecipe(recipe)}
+                  >
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={recipe.image} 
+                        alt={recipe.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => e.target.src = 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/2e53acb1-ba87-4838-8f4a-7072d8a7156a.png'}
+                      />
+                      <div className="absolute top-2 right-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(recipe.id);
+                          }}
+                          className="p-2 bg-white dark:bg-gray-900 bg-opacity-80 dark:bg-opacity-80 rounded-full shadow"
+                        >
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            className={`h-6 w-6 ${favorites.includes(recipe.id) ? 'text-red-500 fill-current' : 'text-gray-500 dark:text-gray-400'}`} 
+                            viewBox="0 0 20 20" 
+                            fill="none" 
+                            stroke="currentColor"
+                          >
+                            <path 
+                              fillRule="evenodd" 
+                              clipRule="evenodd" 
+                              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" 
+                              fill={`${favorites.includes(recipe.id) ? 'currentColor' : 'none'}`}
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="absolute bottom-2 left-2 bg-indigo-600 text-white text-xs px-2 py-1 rounded">
+                        {recipe.cookingTime}
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{recipe.name}</h3>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          recipe.vegetarian ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}>
+                          {recipe.vegetarian ? 'Vegetarian' : 'Non-Vegetarian'}
+                        </span>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          recipe.spiceLevel === 'mild' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 
+                          recipe.spiceLevel === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                          recipe.spiceLevel === 'hot' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                        }`}>
+                          Spice: {recipe.spiceLevel}
+                        </span>
+                        <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                          {recipe.region}
+                        </span>
+                        <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                          {recipe.mealType}
+                        </span>
+                      </div>
+                      <p className="text-gray-500 dark:text-gray-400 line-clamp-2">
+                        Ingredients: {recipe.ingredients.slice(0, 5).join(', ')}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <h3 className="text-xl font-medium text-gray-500 dark:text-gray-400">No recipes found. Try adjusting your search filters.</h3>
+                <button
+                  onClick={() => {
+                    setSearchTerm("");
+                    setSelectedMeal("all");
+                    setSelectedSpiceLevel("all");
+                    setSelectedVegetarian("all");
+                    setSelectedRegion("all");
+                  }}
+                  className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Recipe Details Modal */}
+          {selectedRecipe && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white dark:bg-gray Mi-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="sticky top-0 bg-white dark:bg-gray-800 p-4 flex justify-end shadow-sm">
+                  <button
+                    onClick={closeRecipeDetails}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="p-6">
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="w-full md:w-1/2">
+                      <img 
+                        src={selectedRecipe.image} 
+                        alt={selectedRecipe.name} 
+                        className="w-full h-64 md:h-80 object-cover rounded-lg"
+                        onError={(e) => e.target.src = 'https://placehold.co/600x400?text=Recipe+Image'}
+                      />
+                      
+                      <div className="mt-4">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                          {selectedRecipe.name}
+                          <button
+                            onClick={() => toggleFavorite(selectedRecipe.id)}
+                            className="ml-2 p-1"
+                          >
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className={`h-6 w-6 ${favorites.includes(selectedRecipe.id) ? 'text-red-500 fill-current' : 'text-gray-400 dark:text-gray-600'}`} 
+                              viewBox="0 0 20 20" 
+                              fill="none" 
+                              stroke="currentColor"
+                            >
+                              <path 
+                                fillRule="evenodd" 
+                                clipRule="evenodd" 
+                                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" 
+                                fill={`${favorites.includes(selectedRecipe.id) ? 'currentColor' : 'none'}`}
+                              />
+                            </svg>
+                          </button>
+                        </h2>
+                        
+                        <div className="flex items-center mb-4">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-gray-600 dark:text-gray-400">{selectedRecipe.cookingTime}</span>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2 mb-6">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            selectedRecipe.vegetarian ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}>
+                            {selectedRecipe.vegetarian ? 'Vegetarian' : 'Non-Vegetarian'}
+                          </span>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            selectedRecipe.spiceLevel === 'mild' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 
+                            selectedRecipe.spiceLevel === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                            selectedRecipe.spiceLevel === 'hot' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                          }`}>
+                            Spice: {selectedRecipe.spiceLevel}
+                          </span>
+                          <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                            {selectedRecipe.region}
+                          </span>
+                          <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                            {selectedRecipe.mealType}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="w-full md:w-1/2">
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 border-b pb-2">Ingredients</h3>
+                        <ul className="space-y-2">
+                          {selectedRecipe.ingredients.map((ingredient, index) => (
+                            <li key={index} className="flex items-start">
+                              <span className="inline-block w-2 h-2 bg-indigo-500 rounded-full mt-2 mr-2"></span>
+                              <span className="text-gray-700 dark:text-gray-300">{ingredient}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 border-b pb-2">Instructions</h3>
+                        <ol className="space-y-4">
+                          {selectedRecipe.steps.map((step, index) => (
+                            <li key={index} className="flex">
+                              <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-indigo-500 text-white text-sm font-bold mr-3 mt-1">
+                                {index + 1}
+                              </span>
+                              <span className="text-gray-700 dark:text-gray-300">{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
