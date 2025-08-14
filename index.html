@@ -29,6 +29,27 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
+
+    // Share the current recipe with a #recipe-{id} link
+const shareRecipe = (recipe) => {
+  const url = `${window.location.origin}${window.location.pathname}#recipe-${recipe.id}`;
+  const shareData = {
+    title: recipe.name,
+    text: `Check out this recipe: ${recipe.name}`,
+    url
+  };
+
+  if (navigator.share) {
+    navigator.share(shareData).catch(() => {
+      navigator.clipboard.writeText(url);
+      alert("Link copied to clipboard!");
+    });
+  } else {
+    navigator.clipboard.writeText(url);
+    alert("Link copied to clipboard!");
+  }
+};
+
     // Sample recipe database
     const recipeData = [
       {
@@ -1253,6 +1274,27 @@
         }
       };
 
+      useEffect(() => {
+  const openFromHash = () => {
+    const { hash } = window.location;
+    if (!hash) return;
+
+    const match = hash.match(/^#recipe-(\d+)$/);
+    if (!match) return;
+
+    const id = Number(match[1]);
+    const found = recipeData.find(r => r.id === id); // use your full source array
+    if (found) setSelectedRecipe(found);
+  };
+
+  // open on initial load
+  openFromHash();
+
+  // also react to hash changes without reload (optional but nice)
+  window.addEventListener('hashchange', openFromHash);
+  return () => window.removeEventListener('hashchange', openFromHash);
+}, []);
+
       // Voice search
       const handleVoiceSearch = () => {
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -1446,7 +1488,15 @@
                   <div 
                     key={recipe.id} 
                     className="recipe-card bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer"
-                    onClick={() => setSelectedRecipe(recipe)}
+                    onClick={() => {
+  setSelectedRecipe(recipe);
+  history.replaceState(
+    null,
+    '',
+    `${window.location.pathname}${window.location.search}#recipe-${recipe.id}`
+  );
+}}
+ 
                   >
                     <div className="relative h-48 overflow-hidden">
                       <img 
@@ -1455,33 +1505,31 @@
                         className="w-full h-full object-cover"
                         onError={(e) => e.target.src = 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/2e53acb1-ba87-4838-8f4a-7072d8a7156a.png'}
                       />
-                      <div className="absolute top-2 right-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(recipe.id);
-                          }}
-                          className="p-2 bg-white dark:bg-gray-900 bg-opacity-80 dark:bg-opacity-80 rounded-full shadow"
-                        >
-                          <svg 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            className={`h-6 w-6 ${favorites.includes(recipe.id) ? 'text-red-500 fill-current' : 'text-gray-500 dark:text-gray-400'}`} 
-                            viewBox="0 0 20 20" 
-                            fill="none" 
-                            stroke="currentColor"
-                          >
-                            <path 
-                              fillRule="evenodd" 
-                              clipRule="evenodd" 
-                              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" 
-                              fill={`${favorites.includes(recipe.id) ? 'currentColor' : 'none'}`}
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                      <div className="absolute bottom-2 left-2 bg-indigo-600 text-white text-xs px-2 py-1 rounded">
-                        {recipe.cookingTime}
-                      </div>
+                      <div className="absolute top-2 left-2">
+  <button
+    onClick={(e) => { e.stopPropagation(); shareRecipe(recipe); }}
+    className="p-2 bg-blue-500 text-white rounded-full shadow hover:bg-blue-600 transition"
+    title="Share"
+  >
+    {/* simple share icon */}
+   <svg xmlns="http://www.w3.org/2000/svg"
+     fill="none"
+     viewBox="0 0 24 24"
+     strokeWidth={2}
+     stroke="currentColor"
+     className="w-5 h-5">
+  <circle cx="5" cy="12" r="2" />
+  <circle cx="19" cy="5" r="2" />
+  <circle cx="19" cy="19" r="2" />
+  <line x1="7" y1="12" x2="17" y2="6" />
+  <line x1="7" y1="12" x2="17" y2="18" />
+</svg>
+
+
+  </button>
+</div>
+
+
                     </div>
                     <div className="p-5">
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{recipe.name}</h3>
